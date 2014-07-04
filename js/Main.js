@@ -7,18 +7,13 @@ function init() {
 	this.wrapper.style.width = this.canvasWidth + "px";
 	this.wrapper.style.height = this.canvasHeight + "px";
 	
-	this.scaling = document.getElementById("scaling");
-	var transformOrigin = "0% 0%";
-	this.scaling.style.transformOrigin = transformOrigin;
-	this.scaling.style.msTransformOrigin = transformOrigin;
-	this.scaling.style.WebkitTransformOrigin = transformOrigin;
-	this.scaling.style.MozTransformOrigin = transformOrigin;
-	
 	this.bg = document.getElementById("bg");
 	
 	this.canvas = document.getElementById("canvas");
 	this.canvas.width = this.canvasWidth;
 	this.canvas.height = this.canvasHeight;
+	
+	this.inputs = document.getElementById("inputs");
 	
 	this.xhr = new XMLHttpRequest();
 	this.xhr.open("GET", "data/skeleton.atlas", true);
@@ -52,11 +47,14 @@ function textureLoaderLoad(page, path, atlas) {
 
 function imageLoadHandler() {
 	this.stage = new createjs.Stage(this.canvas);
+	this.dancerContainer = new createjs.Container();
+	this.stage.addChild(this.dancerContainer);
+	
 	this.dancer = new createjs.Container();
 	this.dancer.scaleX = this.dancer.scaleY = 0.80;
 	this.dancer.x = this.canvasWidth / 2;
 	this.dancer.y = this.canvasHeight / 2 + 20;
-	this.stage.addChild(this.dancer);
+	this.dancerContainer.addChild(this.dancer);
 	this.containers = [];
 	for (var i = 0; i < this.atlas.regions.length; i++) {
 		var region = this.atlas.regions[i];
@@ -127,8 +125,8 @@ function skeletonLoadHandler (event) {
 		
 		var radioDiv = document.createElement("div");
 		radioDiv.style.display = "inline";
-		radioDiv.style.marginLeft = "10px";
-		radioDiv.style.marginRight = "10px";
+		radioDiv.style.paddingLeft = "10px";
+		radioDiv.style.paddingRight = "10px";
 		var radio = document.createElement("input");
 		radio.id = music.id;
 		radio.type = "radio";
@@ -165,15 +163,18 @@ function skeletonLoadHandler (event) {
 function windowResize(event) {
 	var scale = Math.min(this.canvasWidth, window.innerWidth) / this.canvasWidth;
 	
-	this.wrapper.style.width = this.canvasWidth * scale + "px";
-	this.wrapper.style.height = this.canvasHeight * scale + "px";
+	var newWidth = Math.floor(this.canvasWidth * scale);
+	var newHeight = Math.floor(this.canvasHeight * scale);
 	
-	var transform = "scale(" + scale + "," + scale + ")";
-	this.scaling.style.transform = transform;
-	this.scaling.style.msTransform = transform;
-	this.scaling.style.WebkitTransform = transform;
-	this.scaling.style.MozTransform = transform;
-	this.scaling.style.OTransform = transform;
+	this.wrapper.style.width = newWidth + "px";
+	this.wrapper.style.height = newHeight + "px";
+	
+	this.canvas.width = newWidth;
+	this.canvas.height = newHeight;
+	
+	this.dancerContainer.scaleX = this.dancerContainer.scaleY = scale;
+	
+	this.update();
 }
 
 function radioClick(event) {
@@ -215,6 +216,8 @@ function setSelectedStyle(genre) {
 	this.selectedMusic = genre;
 	this.bg.innerHTML = "";
 	var bgImage = new Image();
+	bgImage.style.width = "100%";
+	bgImage.style.height = "100%";
 	bgImage.src = "img/" + genre.id + ".jpg";
 	bgImage.className = "fill";
 	this.bg.appendChild(bgImage);
